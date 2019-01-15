@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+  <!-- activity_capture -->
+  <item type="id" name="zxing_preview_view"/>
+  <item type="id" name="zxing_viewfinder_view"/>
+  <item type="id" name="zxing_btn_cancel_scan"/>
+
+
+  <!-- Messages IDs -->
+  <item type="id" name="zxing_auto_focus"/>
+  <item type="id" name="zxing_decode"/>
+  <item type="id" name="zxing_decode_failed"/>
+  <item type="id" name="zxing_decode_succeeded"/>
+  <!--<item type="id" name="encode_failed"/>-->
+  <!--<item type="id" name="encode_succeeded"/>-->
+  <item type="id" name="zxing_launch_product_query"/>
+  <item type="id" name="zxing_quit"/>
+  <item type="id" name="zxing_restart_preview"/>
+  <item type="id" name="zxing_return_scan_result"/>
+  <!--<item type="id" name="search_book_contents_failed"/>-->
+  <!--<item type="id" name="search_book_contents_succeeded"/>-->
+</resources>

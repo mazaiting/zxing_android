@@ -1,0 +1,31 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="com.mazaiting.zxing">
+  <!-- 相机权限 -->
+  <uses-permission android:name="android.permission.CAMERA"/>
+  <!-- 震动权限 -->
+  <uses-permission android:name="android.permission.VIBRATE"/>
+  <!--闪光灯权限-->
+  <uses-permission android:name="android.permission.FLASHLIGHT"/>
+  <!--写入内存卡-->
+  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+  <!-- 照相机特性 -->
+  <uses-feature android:name="android.hardware.camera.any"/>
+  <!-- 自动聚焦特性 -->
+  <uses-feature
+      android:name="android.hardware.camera.autofocus"
+      android:required="false"/>
+  <!-- 使用照相机特性 -->
+  <uses-feature
+      android:name="android.hardware.camera.flash"
+      android:required="false"/>
+
+  <application>
+    <!--android:theme="@android:style/Theme.NoTitleBar.Fullscreen"-->
+    <activity
+        android:name="com.mazaiting.zxing.CaptureActivity"
+        android:configChanges="orientation|keyboardHidden"
+        android:theme="@style/Base.Theme.AppCompat.FullScreen"
+        android:windowSoftInputMode="stateAlwaysHidden"/>
+  </application>
+
+</manifest>

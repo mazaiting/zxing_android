@@ -1,0 +1,8 @@
+<resources>
+  <string name="app_name">ZxingTest</string>
+  <string name="et_tips">请输入二维码内容</string>
+  <string name="btn_tips">生成</string>
+  <string name="btn_scan">扫描</string>
+  <string name="iv_tips">二维码</string>
+  <string name="btn_local_scan">本地图片识别</string>
+</resources>
