@@ -5,8 +5,6 @@ import android.graphics.Point
 import android.hardware.Camera
 import android.view.WindowManager
 import com.mazaiting.log.L
-import com.mazaiting.zxing.BuildConfig
-import java.util.*
 import java.util.regex.Pattern
 
 /**
@@ -67,28 +65,28 @@ class CameraConfigurationManager internal constructor(private val context: Conte
   }
     
   /**
-   * Sets the camera up to take preview images which are used for both preview and decoding.
-   * We detect the preview format here so that buildLuminanceSource() can build an appropriate
-   * LuminanceSource subclass. In the future we may want to force YUV420SP as it's the smallest,
-   * and the planar Y can be used for barcode scanning without a copy in some cases.
+   * 设置相机的期望参数
+   * 设置用于预览的姐的相机图像, 我们在这里检测预览帧为了buildLuminanceSource()能够创建一个适当的LuminanceSource
+   * 子类. 以后我们可能想去强制使用更小的YUV420SP, 并且Y平面被用于扫描码.
    */
   internal fun setDesiredCameraParameters(camera: Camera) {
-    
+    // 获取相机参数
     val parameters = camera.parameters
-    
+    // 判断参数是否为空
     if (parameters == null) {
       L.d("Device error: no camera parameters are available. Proceeding without configuration.")
       return
     }
-    
+    // 打印参数
     L.d("Initial camera parameters: " + parameters.flatten())
     
     //if (safeMode) {
     //  Log.w(TAG, "In camera config safe mode -- most settings will not be honored");
     //}
+    // 设置预览大小
     parameters.setPreviewSize(cameraResolution!!.x, cameraResolution!!.y)
     camera.parameters = parameters
-    
+    // 获取参数
     val afterParameters = camera.parameters
     /*
     Log.d(TAG, "Setting preview size: " + cameraResolution);
@@ -99,7 +97,7 @@ class CameraConfigurationManager internal constructor(private val context: Conte
     //modify here
     camera.setDisplayOrientation(90);
     camera.setParameters(parameters);*/
-    
+    // 获取预览大小
     val afterSize = afterParameters.previewSize
     if (afterSize != null && (cameraResolution!!.x != afterSize.width || cameraResolution!!.y != afterSize
                     .height)) {
@@ -110,34 +108,47 @@ class CameraConfigurationManager internal constructor(private val context: Conte
       cameraResolution!!.y = afterSize.height
     }
     
-    /** 设置相机预览为竖屏  */
+    // 设置相机预览为竖屏
     camera.setDisplayOrientation(90)
   }
   
+  /**
+   * 设置闪光灯
+   * @param parameters 相机参数
+   */
   private fun setFlash(parameters: Camera.Parameters) {
     // FIXME: This is a hack to turn the flash off on the Samsung Galaxy.
     // And this is a hack-hack to work around a different value on the Behold II
     // Restrict Behold II check to Cupcake, per Samsung's advice
     //if (Build.MODEL.contains("Behold II") &&
     //    CameraManager.SDK_INT == Build.VERSION_CODES.CUPCAKE) {
+    // 设置闪光值
     parameters.set("flash-value", 2)
     // This is the standard setting to turn the flash off that all devices should honor.
+    //  设置模式
     parameters.set("flash-mode", "off")
   }
   
+  /**
+   * 设置缩放
+   * @param parameters 相机参数
+   */
   private fun setZoom(parameters: Camera.Parameters) {
-    
-    val zoomSupportedString = parameters.get("zoom-supported")
-    if (zoomSupportedString != null && !java.lang.Boolean.parseBoolean(zoomSupportedString)) {
+    // 获取缩放所支持的字符串
+    val zoomSupportedString: String? = parameters.get("zoom-supported")
+    // 判断是否为空
+    if (zoomSupportedString != null && !zoomSupportedString.toBoolean()) {
       return
     }
-    
+    // 初始化期望值
     var tenDesiredZoom = TEN_DESIRED_ZOOM
-    
+    // 获取最大缩放
     val maxZoomString = parameters.get("max-zoom")
     if (maxZoomString != null) {
       try {
-        val tenMaxZoom = (10.0 * java.lang.Double.parseDouble(maxZoomString)).toInt()
+        // 获取缩放值
+        val tenMaxZoom = (10.0 * maxZoomString.toDouble()).toInt()
+        // 判断是否小于期望值
         if (tenDesiredZoom > tenMaxZoom) {
           tenDesiredZoom = tenMaxZoom
         }
@@ -146,11 +157,13 @@ class CameraConfigurationManager internal constructor(private val context: Conte
       }
       
     }
-    
+    // 获取拍照缩放最大值
     val takingPictureZoomMaxString = parameters.get("taking-picture-zoom-max")
     if (takingPictureZoomMaxString != null) {
       try {
+        // 将字符串转为整型
         val tenMaxZoom = Integer.parseInt(takingPictureZoomMaxString)
+        // 判断是否小于期望值
         if (tenDesiredZoom > tenMaxZoom) {
           tenDesiredZoom = tenMaxZoom
         }
@@ -159,17 +172,20 @@ class CameraConfigurationManager internal constructor(private val context: Conte
       }
       
     }
-    
+    // 获取支持的缩放值
     val motZoomValuesString = parameters.get("mot-zoom-values")
     if (motZoomValuesString != null) {
+      // 寻找最好的缩放值
       tenDesiredZoom = findBestMotZoomValue(motZoomValuesString, tenDesiredZoom)
     }
-    
+    // 获取缩放步长
     val motZoomStepString = parameters.get("mot-zoom-step")
     if (motZoomStepString != null) {
       try {
-        val motZoomStep = java.lang.Double.parseDouble(motZoomStepString.trim { it <= ' ' })
+        val motZoomStep = motZoomStepString.trim { it <= ' ' }.toDouble()
+        // 转为整型
         val tenZoomStep = (10.0 * motZoomStep).toInt()
+        // 设置期望值
         if (tenZoomStep > 1) {
           tenDesiredZoom -= tenDesiredZoom % tenZoomStep
         }
@@ -178,126 +194,20 @@ class CameraConfigurationManager internal constructor(private val context: Conte
       }
       
     }
-    
-    // Set zoom. This helps encourage the user to pull back.
-    // Some devices like the Behold have a zoom parameter
+    // 设置缩放, 帮助我们获取最好的图片
     if (maxZoomString != null || motZoomValuesString != null) {
       parameters.set("zoom", (tenDesiredZoom / 10.0).toString())
     }
-    
-    // Most devices, like the Hero, appear to expose this zoom parameter.
-    // It takes on values like "27" which appears to mean 2.7x zoom
+    // 大多数设备, 像"27"意味着2.7x缩放
     if (takingPictureZoomMaxString != null) {
       parameters.set("taking-picture-zoom", tenDesiredZoom)
     }
   }
   
   
-  /**
-   * 从相机支持的分辨率中计算出最适合的预览界面尺寸
-   *
-   * @param parameters
-   * @param screenResolution
-   * @return
-   */
-  private fun findBestPreviewSizeValues(parameters: Camera.Parameters, screenResolution: Point): Point {
-    val rawSupportedSizes = parameters.supportedPreviewSizes
-    if (rawSupportedSizes == null) {
-      L.d("Device returned no supported preview sizes; using default")
-      val defaultSize = parameters.previewSize
-      return Point(defaultSize.width, defaultSize.height)
-    }
-    
-    // Sort by size, descending
-    val supportedPreviewSizes = ArrayList(rawSupportedSizes)
-    Collections.sort<Camera.Size>(supportedPreviewSizes, Comparator<Camera.Size> { a, b ->
-      val aPixels = a.height * a.width
-      val bPixels = b.height * b.width
-      if (bPixels < aPixels) {
-        return@Comparator -1
-      }
-      if (bPixels > aPixels) {
-        1
-      } else 0
-    })
-    
-    if (BuildConfig.DEBUG) {
-      val previewSizesString = StringBuilder()
-      for (supportedPreviewSize in supportedPreviewSizes) {
-        previewSizesString.append(supportedPreviewSize.width).append('x').append(supportedPreviewSize.height).append(' ')
-      }
-      L.d("Supported preview sizes: $previewSizesString")
-    }
-
-//    if (Log.isLoggable(TAG, Log.INFO)) {
-//      val previewSizesString = StringBuilder()
-//      for (supportedPreviewSize in supportedPreviewSizes) {
-//        previewSizesString.append(supportedPreviewSize.width).append('x').append(supportedPreviewSize.height).append(' ')
-//      }
-//      Log.i(TAG, "Supported preview sizes: $previewSizesString")
-//    }
-    
-    val screenAspectRatio = screenResolution.x.toDouble() / screenResolution.y.toDouble()
-    
-    // Remove sizes that are unsuitable
-    val it = supportedPreviewSizes.iterator()
-    while (it.hasNext()) {
-      val supportedPreviewSize = it.next()
-      val realWidth = supportedPreviewSize.width
-      val realHeight = supportedPreviewSize.height
-      if (realWidth * realHeight < MIN_PREVIEW_PIXELS) {
-        it.remove()
-        continue
-      }
-      
-      val isCandidatePortrait = realWidth < realHeight
-      val maybeFlippedWidth = if (isCandidatePortrait) realHeight else realWidth
-      val maybeFlippedHeight = if (isCandidatePortrait) realWidth else realHeight
-      
-      val aspectRatio = maybeFlippedWidth.toDouble() / maybeFlippedHeight.toDouble()
-      val distortion = Math.abs(aspectRatio - screenAspectRatio)
-      if (distortion > MAX_ASPECT_DISTORTION) {
-        it.remove()
-        continue
-      }
-      
-      if (maybeFlippedWidth == screenResolution.x && maybeFlippedHeight == screenResolution.y) {
-        val exactPoint = Point(realWidth, realHeight)
-        L.d("Found preview size exactly matching screen size: $exactPoint")
-        return exactPoint
-      }
-    }
-    
-    // If no exact match, use largest preview size. This was not a great
-    // idea on older devices because
-    // of the additional computation needed. We're likely to get here on
-    // newer Android 4+ devices, where
-    // the CPU is much more powerful.
-    if (!supportedPreviewSizes.isEmpty()) {
-      val largestPreview = supportedPreviewSizes[0]
-      val largestSize = Point(largestPreview.width, largestPreview.height)
-      L.d("Using largest suitable preview size: $largestSize")
-      return largestSize
-    }
-    
-    // If there is nothing at all suitable, return current preview size
-    val defaultPreview = parameters.previewSize
-    val defaultSize = Point(defaultPreview.width, defaultPreview.height)
-    L.d("No suitable preview sizes, using default: $defaultSize")
-    
-    return defaultSize
-  }
-  
   companion object {
-    //得到类的简写名称
-    private val TAG = CameraConfigurationManager::class.java.simpleName
-    
-    private val MIN_PREVIEW_PIXELS = 480 * 320
-    private val MAX_ASPECT_DISTORTION = 0.15
-    //变焦
-    private val TEN_DESIRED_ZOOM = 27
-    //锐利度
-    val desiredSharpness = 30
+    /** 变焦 */
+    private const val TEN_DESIRED_ZOOM = 27
     /** 正则表达 */
     private val COMMA_PATTERN = Pattern.compile(",")
   
@@ -389,24 +299,38 @@ class CameraConfigurationManager internal constructor(private val context: Conte
         Point(bestX, bestY)
       } else null
     }
-    
-    //寻找到最适合的对焦值
+  
+    /**
+     * 寻找到最适合的对焦值
+     * @param stringValues 可选值
+     * @param tenDesiredZoom 对焦值
+     * @return 最好的对焦值
+     */
     private fun findBestMotZoomValue(stringValues: CharSequence, tenDesiredZoom: Int): Int {
+      // 设置最好的对焦值默认为0
       var tenBestValue = 0
+      // 根据正则分割字符串, 并遍历
       for (stringValue in COMMA_PATTERN.split(stringValues)) {
+        // 去除空格
         val sValue = stringValue.trim { it <= ' ' }
+        // 定义值
         val value: Double
         try {
-          value = java.lang.Double.parseDouble(sValue)
+          // 转换为Double雷兴国
+//          value = Double.parseDouble(sValue)
+          value = sValue.toDouble()
         } catch (nfe: NumberFormatException) {
+          // 数字格式化异常, 直接返回
           return tenDesiredZoom
         }
-        
+        // 转换为整型
         val tenValue = (10.0 * value).toInt()
+        // 判断绝对值之差, 检测是否为最好的对焦值
         if (Math.abs(tenDesiredZoom - value) < Math.abs(tenDesiredZoom - tenBestValue)) {
           tenBestValue = tenValue
         }
       }
+      // 返回最好的对焦值
       return tenBestValue
     }
   }

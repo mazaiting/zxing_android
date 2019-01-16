@@ -18,7 +18,7 @@ import java.io.IOException
  * 照相机管理者
  * @param context 上下文
  */
-class CameraManager private constructor(val context: Context) {
+class CameraManager private constructor(private val context: Context) {
   
   companion object {
     /** 取景框最小宽度 */

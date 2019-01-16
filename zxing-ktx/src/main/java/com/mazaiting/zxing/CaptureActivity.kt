@@ -4,7 +4,6 @@ import android.Manifest
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.media.AudioAttributes
 import android.media.AudioManager
@@ -14,19 +13,18 @@ import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.WindowManager
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import com.google.zxing.Result
 import com.mazaiting.log.L
+import com.mazaiting.permission.PermissionResult
 import com.mazaiting.permission.Permissions
 import com.mazaiting.permission.util.PermissionSettingUtil
 import com.mazaiting.permission.util.PermissionUtil
+import com.mazaiting.permission.util.State
 import com.mazaiting.zxing.camera.CameraManager
 import com.mazaiting.zxing.util.InactivityTimer
 import com.mazaiting.zxing.view.ViewfinderView
 import java.io.IOException
-import java.util.*
 
 /**
  * 扫描二维码界面
@@ -68,7 +66,6 @@ class CaptureActivity : AppCompatActivity(), SurfaceHolder.Callback {
     const val SCAN_RESULT_TEXT = "result"
     /** 扫描结果图像 */
     const val SCAN_RESULT_BITMAP = "qr_code"
-    
   }
   
   /** 扫描界面的Handler */
@@ -85,6 +82,9 @@ class CaptureActivity : AppCompatActivity(), SurfaceHolder.Callback {
   private var isPlayBeep: Boolean = false
   /** 是否震动 */
   private var isVibrate: Boolean = false
+  /** Surface控制器 */
+  private var mSurfaceHolder: SurfaceHolder? = null
+  
   /**
    * 播放监听, 播放完成后, 将进度置为0
    */
@@ -124,38 +124,6 @@ class CaptureActivity : AppCompatActivity(), SurfaceHolder.Callback {
     }
   }
   
-  /**
-   * 请求必要权限
-   */
-  private fun requestPermission() {
-    // 判断版本, 6.0以上请求必要权限
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-      // 请求权限
-      requestPermissionForStorageAndCamera()
-    }
-  }
-
-  /**
-   * 请求存储权限与照相机权限
-   * Android 6.0以上的版本
-   */
-  @RequiresApi(api = Build.VERSION_CODES.M)
-  private fun requestPermissionForStorageAndCamera() {
-    val list = ArrayList<String>()
-    // 检测是否具有写入内存卡权限
-    if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-      list.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-    }
-    // 检测是否具有使用照相机权限
-    if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-      list.add(Manifest.permission.CAMERA)
-    }
-    if (list.size > 0) {
-      // 请求权限, 参数1：将list转换为数组
-      requestPermissions(list.toTypedArray(), SCAN_PERMISSION_CODE)
-    }
-  }
-
   override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
     super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 //    if (SCAN_PERMISSION_CODE == requestCode) {
@@ -165,16 +133,29 @@ class CaptureActivity : AppCompatActivity(), SurfaceHolder.Callback {
     PermissionUtil.onRequestPermissionsResult(this, requestCode, permissions, grantResults)
   }
   
+  /**
+   * 权限请求结果处理
+   * @param state 权限授权状态
+   * @param permissions 当状态为Succeed时权限列表为空
+   */
+  @PermissionResult(SCAN_PERMISSION_CODE)
+  fun permissionResult(state: State, permissions: List<String>?) {
+    when (state) {
+      State.DENIED -> // 再次请求权限
+        PermissionUtil.requestPermission(this)
+      State.SUCCESS -> // Toast.makeText(this, "权限申请成功!", Toast.LENGTH_SHORT).show()
+        initCamera()
+      State.NOT_SHOW -> notShow(permissions!!)
+    }
+  }
   
-
   /**
    * 点击不再提示后并拒绝
    */
-  fun notShow(permissions: List<String>) {
+  private fun notShow(permissions: List<String>) {
     val sb = StringBuilder()
     // 迭代读取权限
     permissions.forEach { permission ->
-      L.d("MainActivity--notShow--$permission")
       sb.append("$permission\n")
     }
     // 跳转到应用设置界面
@@ -201,13 +182,14 @@ class CaptureActivity : AppCompatActivity(), SurfaceHolder.Callback {
     val surfaceHolder = surfaceView.holder
     // 如果已经有Surface, 则进行相机初始化
     if (isHasSurface) {
+      mSurfaceHolder = surfaceHolder
       // 初始化相机
-      initCamera(surfaceHolder)
+      initCameraWithPermission()
     } else {
       // 添加回调
       surfaceHolder.addCallback(this)
       // 设置类型
-//      surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS)
+//      mSurfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS)
     }
     // 设置允许蜂鸣
     isPlayBeep = true
@@ -277,12 +259,18 @@ class CaptureActivity : AppCompatActivity(), SurfaceHolder.Callback {
   
   /**
    * 初始化相机
-   * @param holder Surface
    */
-  private fun initCamera(holder: SurfaceHolder) {
+  private fun initCameraWithPermission() {
+    PermissionUtil.requestPermission(this)
+  }
+  
+  /**
+   * 初始化相机
+   */
+  private fun initCamera() {
     try {
       // 打开设备
-      CameraManager.get().openDriver(holder)
+      mSurfaceHolder?.let { CameraManager.get().openDriver(it) }
     } catch (ioe: IOException) {
       return
     }
@@ -299,8 +287,9 @@ class CaptureActivity : AppCompatActivity(), SurfaceHolder.Callback {
     // 判断Surface是否可用
     if (!isHasSurface) {
       isHasSurface = true
+      mSurfaceHolder = holder
       // 初始化相机
-      initCamera(holder)
+      initCameraWithPermission()
     }
   }
   
@@ -310,7 +299,7 @@ class CaptureActivity : AppCompatActivity(), SurfaceHolder.Callback {
   }
   
   /** 获取ViewfinderView对象 */
-  fun getViewfinderView(): ViewfinderView? = mViewfinderView
+  fun getViewfinderView(): ViewfinderView = mViewfinderView!!
   
   /** 返回Handler */
   fun getHandler(): Handler? = mHandler

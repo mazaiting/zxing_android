@@ -5,6 +5,7 @@ import android.content.DialogInterface
 
 /**
  * 退出app监听
+ * @param activity Activity
  */
 class FinishListener(private val activity: Activity) : DialogInterface.OnClickListener, DialogInterface.OnCancelListener, Runnable {
   
@@ -17,6 +18,7 @@ class FinishListener(private val activity: Activity) : DialogInterface.OnClickLi
   }
   
   override fun run() {
+    // 关闭当前界面
     activity.finish()
   }
 }

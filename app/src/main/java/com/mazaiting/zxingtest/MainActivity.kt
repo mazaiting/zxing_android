@@ -64,45 +64,6 @@ class MainActivity : AppCompatActivity() {
   }
   
   /**
-   * 请求必要权限
-   */
-  private fun requestPermission() {
-    // 判断版本, 6.0以上请求必要权限
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-      // 请求权限
-      requestPermissionForStorageAndCamera()
-    }
-  }
-  
-  /**
-   * 请求存储权限与照相机权限
-   * Android 6.0以上的版本
-   */
-  @RequiresApi(api = Build.VERSION_CODES.M)
-  private fun requestPermissionForStorageAndCamera() {
-    val list = ArrayList<String>()
-    // 检测是否具有写入内存卡权限
-    if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-      list.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-    }
-    // 检测是否具有使用照相机权限
-    if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-      list.add(Manifest.permission.CAMERA)
-    }
-    if (list.size > 0) {
-      // 请求权限, 参数1：将list转换为数组
-      requestPermissions(list.toTypedArray(), SCAN_PERMISSION_CODE)
-    }
-  }
-  
-  override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-    super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-    if (SCAN_PERMISSION_CODE == requestCode) {
-//      Toast.makeText(this@MainActivity, "未授予相应的权限",Toast.LENGTH_SHORT).show()
-    }
-  }
-  
-  /**
    * 二维码扫描
    */
   private fun qrCodeScan() {
