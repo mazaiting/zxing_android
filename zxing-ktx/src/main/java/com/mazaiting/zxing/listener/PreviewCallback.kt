@@ -9,20 +9,7 @@ import com.mazaiting.zxing.camera.CameraConfigurationManager
  * 继承自HandlerCallback, 实现Camera.PreviewCallback接口
  */
 class PreviewCallback(private val configManager: CameraConfigurationManager) : HandlerCallback(), Camera.PreviewCallback{
-//  /** 显示Handler */
-//  private var handler: Handler? = null
-//  /** 显示消息Message */
-//  private var message: Int = 0
-//
-//  /**
-//   * 设置消息处理对象
-//   * @param
-//   */
-//  fun setHandler(handler: Handler?, message: Int) {
-//    this.handler = handler
-//    this.message = message
-//  }
-//
+
   //预览图像
   override fun onPreviewFrame(data: ByteArray, camera: Camera) {
     if (handler != null) {

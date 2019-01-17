@@ -42,3 +42,5 @@ dependencies {
   // 权限工具
   api 'com.mazaiting:permission:1.0.1'
 }
+
+apply from: "./../jcenter.gradle"

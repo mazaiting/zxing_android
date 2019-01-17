@@ -8,14 +8,13 @@ import android.os.Build
 import android.os.Handler
 import android.os.Message
 import android.os.Parcelable
-import com.google.zxing.BarcodeFormat
 import com.google.zxing.Result
 import com.mazaiting.log.L
 import com.mazaiting.zxing.camera.CameraManager
 import com.mazaiting.zxing.constant.*
 import com.mazaiting.zxing.util.DecodeThread
 import com.mazaiting.zxing.view.ViewfinderResultPointCallback
-import java.util.Vector
+
 
 /**
  * 根据状态处理CaptureActivity中的所有消息

@@ -5,12 +5,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import android.text.TextUtils
-
-import com.google.zxing.BinaryBitmap
-import com.google.zxing.DecodeHintType
-import com.google.zxing.MultiFormatReader
-import com.google.zxing.ReaderException
-import com.google.zxing.Result
+import com.google.zxing.*
 import com.google.zxing.common.HybridBinarizer
 import com.mazaiting.log.L
 import com.mazaiting.zxing.CaptureActivity
@@ -19,8 +14,7 @@ import com.mazaiting.zxing.constant.DECODE
 import com.mazaiting.zxing.constant.DECODE_FAILED
 import com.mazaiting.zxing.constant.DECODE_SUCCEEDED
 import com.mazaiting.zxing.constant.QUIT
-
-import java.util.Hashtable
+import java.util.*
 
 /**
  * 解码处理工具
@@ -78,7 +72,7 @@ internal class DecodeHandler(private val activity: CaptureActivity,
     // 将二进制图像数据旋转90度
     for (y in 0 until height) {
       for (x in 0 until width)
-        // 存放数据
+      // 存放数据
         rotatedData[x * height + height - y - 1] = data[x + y * width]
     }
 //    val tmp = width // Here we are swapping, that's the difference to #11
@@ -92,7 +86,7 @@ internal class DecodeHandler(private val activity: CaptureActivity,
       // 解码工具解码
       rawResult = multiFormatReader.decodeWithState(bitmap)
     } catch (re: ReaderException) {
-      if (re.message !=null && !TextUtils.isEmpty(re.message)) L.d(re.message)
+      if (re.message != null && !TextUtils.isEmpty(re.message)) L.d(re.message)
     } finally {
       // 重置解码工具
       multiFormatReader.reset()

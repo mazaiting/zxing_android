@@ -50,3 +50,21 @@ This is a Qrcode encode and decode library.
     Toast.makeText(this@MainActivity, text, Toast.LENGTH_SHORT).show()
   }
 ```
+
+### 相关信息
+
+##### 1. [码云主页](https://gitee.com/mazaiting)
+##### 2. [简书主页](https://www.jianshu.com/u/5d2cb4bfeb15)
+##### 3. [CSDN主页](https://blog.csdn.net/mazaiting)
+##### 4. [Github主页](https://github.com/mazaiting)
+##### 5. 微信公众号： real_x2019
+
+![微信公众号：凌浩雨](./pic/real_x2019.jpg "real_x2019")
+
+##### 6. Flutter QQ群: 717034802
+
+![FlutterQQ群](./pic/flutter_group.png "FlutterQQ群")
+
+##### 7. 打赏
+
+![打赏](./pic/alipay.jpg "支付宝")

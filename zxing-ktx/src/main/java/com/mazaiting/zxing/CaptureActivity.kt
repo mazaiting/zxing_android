@@ -97,14 +97,8 @@ class CaptureActivity : AppCompatActivity(), SurfaceHolder.Callback {
     super.onCreate(savedInstanceState)
     // 保持屏幕常亮
     window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-//    initDebug()
-//    // 请求权限
-//    requestPermission()
     setContentView(R.layout.activity_capture)
     initDebug()
-    // 请求权限
-//    PermissionUtil.requestPermission(this)
-//    requestPermission()
     // 相机管理者初始化
     CameraManager.init(application)
     // 初始化画中画
@@ -186,6 +180,8 @@ class CaptureActivity : AppCompatActivity(), SurfaceHolder.Callback {
       // 初始化相机
       initCameraWithPermission()
     } else {
+      // 设置屏幕常量
+      surfaceHolder.setKeepScreenOn(true)
       // 添加回调
       surfaceHolder.addCallback(this)
       // 设置类型

@@ -1,18 +1,16 @@
 package com.mazaiting.zxing.view
 
 import android.content.Context
-import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
-import android.graphics.Rect
 import android.os.Build
 import android.util.AttributeSet
 import android.view.View
 import com.google.zxing.ResultPoint
 import com.mazaiting.zxing.R
 import com.mazaiting.zxing.camera.CameraManager
-import java.util.HashSet
+import java.util.*
 
 /**
  * 扫描框预览

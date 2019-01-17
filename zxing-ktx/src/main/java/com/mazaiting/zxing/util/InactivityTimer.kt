@@ -1,11 +1,8 @@
 package com.mazaiting.zxing.util
 
 import android.app.Activity
-
 import com.mazaiting.zxing.listener.FinishListener
-
 import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.TimeUnit
